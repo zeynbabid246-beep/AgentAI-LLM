@@ -1,4 +1,4 @@
-# Agent LLM Web App - A Student's Guide
+# Agent LLM Web App - Guide
 
 ## 1. Introduction
 
@@ -42,7 +42,7 @@ Follow these steps to get the project running on your local machine.
 
 **Step 1: Clone the Repository**
 ```
-git clone 
+git clone https://github.com/zeynbabid246-beep/AgentAI-LLM
 cd AgentAI-guide
 ```
 
