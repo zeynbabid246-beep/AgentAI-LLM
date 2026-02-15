@@ -7,18 +7,51 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <!-- Background effects -->
+    <canvas id="bg-canvas"></canvas>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
     <div class="chat-container">
         <div class="chat-header">
+            <div class="header-logo">
+                <svg width="20" height="20" viewBox="0 0 26 26" fill="none">
+                    <polygon points="13,1.5 24.5,7.5 24.5,19.5 13,25.5 1.5,19.5 1.5,7.5"
+                        stroke="url(#hg)" stroke-width="1.5" fill="none"/>
+                    <circle cx="13" cy="13" r="3.5" fill="url(#hg)"/>
+                    <defs>
+                        <linearGradient id="hg" x1="0" y1="0" x2="26" y2="26">
+                            <stop offset="0%" stop-color="#c084fc"/>
+                            <stop offset="100%" stop-color="#7c3aed"/>
+                        </linearGradient>
+                    </defs>
+                </svg>
+            </div>
             <h2>Mon Agent LLM</h2>
+            <div class="header-status">
+                <span class="status-dot"></span>
+                <span class="status-label" id="status-label">En ligne</span>
+            </div>
         </div>
+
         <div class="chat-box" id="chat-box">
             <!-- Les messages apparaîtront ici -->
         </div>
+
         <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Posez votre question ici...">
-            <button id="send-btn">Envoyer</button>
+            <input type="text" id="user-input" placeholder="Posez votre question ici..." autocomplete="off">
+            <button id="send-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                    width="16" height="16">
+                    <line x1="22" y1="2" x2="11" y2="13"/>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
