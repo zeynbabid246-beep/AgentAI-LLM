@@ -1,222 +1,141 @@
-// script.js
-document.addEventListener("DOMContentLoaded", () => {
+// ============================================================
+//  Mon Agent LLM — script.js
+//  Backend: FastAPI @ localhost:8000/agent-chat
+//  Payload:  POST { "message": "..." }
+//  Response: { "response": "..." }
+// ============================================================
 
-    const chatBox   = document.getElementById("chat-box");
-    const userInput = document.getElementById("user-input");
-    const sendBtn   = document.getElementById("send-btn");
-    const statusEl  = document.getElementById("status-label");
+const API_URL = "http://localhost:8000/agent-chat";
 
-    // URL de l'API backend
-    const API_URL = "http://127.0.0.1:8000/agent-chat";
+// Auto-resize textarea
+const textarea = document.getElementById("userInput");
+textarea.addEventListener("input", () => {
+  textarea.style.height = "auto";
+  textarea.style.height = Math.min(textarea.scrollHeight, 140) + "px";
+});
 
-    // ── État ──────────────────────────────────────────────
-    let isThinking = false;
+// Enter to send (Shift+Enter for newline)
+textarea.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+});
 
-    // ── Statut header ─────────────────────────────────────
-    function setStatus(state) {
-        const parent = statusEl?.parentElement;
-        if (!parent || !statusEl) return;
-        const labels = { online: "En ligne", thinking: "Réflexion…", error: "Hors ligne" };
-        parent.className = "header-status" + (state !== "online" ? ` ${state}` : "");
-        statusEl.textContent = labels[state] ?? "En ligne";
-    }
+// ---- Main send function ----
+async function sendMessage() {
+  const input = textarea.value.trim();
+  if (!input) return;
 
-    // ── Canvas background ─────────────────────────────────
-    const canvas = document.getElementById("bg-canvas");
-    if (canvas) {
-        const ctx = canvas.getContext("2d");
+  textarea.value = "";
+  textarea.style.height = "auto";
 
-        function resizeCanvas() {
-            canvas.width  = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        resizeCanvas();
-        window.addEventListener("resize", resizeCanvas);
+  appendMessage("user", input);
 
-        class Particle {
-            constructor() { this.reset(true); }
-            reset(initial = false) {
-                this.x     = Math.random() * canvas.width;
-                this.y     = initial ? Math.random() * canvas.height : canvas.height + 10;
-                this.vx    = (Math.random() - .5) * .28;
-                this.vy    = -(Math.random() * .4 + .1);
-                this.r     = Math.random() * 1.5 + .4;
-                this.alpha = Math.random() * .5 + .1;
-                this.color = Math.random() > .5 ? "168,85,247" : "124,58,237";
-                this.phase = Math.random() * Math.PI * 2;
-                this.speed = Math.random() * .018 + .005;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                this.phase += this.speed;
-                this.a = this.alpha * (.55 + .45 * Math.sin(this.phase));
-                if (this.y < -10) this.reset(false);
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(${this.color},${this.a})`;
-                ctx.fill();
-            }
-        }
+  const sendBtn = document.getElementById("sendBtn");
+  sendBtn.disabled = true;
 
-        const particles = Array.from({ length: 50 }, () => new Particle());
+  const typingRow = showTypingIndicator();
 
-        function drawLinks() {
-            for (let i = 0; i < particles.length; i++) {
-                for (let j = i + 1; j < particles.length; j++) {
-                    const dx = particles[i].x - particles[j].x;
-                    const dy = particles[i].y - particles[j].y;
-                    const d  = Math.sqrt(dx*dx + dy*dy);
-                    if (d < 100) {
-                        ctx.beginPath();
-                        ctx.moveTo(particles[i].x, particles[i].y);
-                        ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(168,85,247,${(1 - d/100) * .055})`;
-                        ctx.lineWidth = .5;
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        (function loop() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawLinks();
-            particles.forEach(p => { p.update(); p.draw(); });
-            requestAnimationFrame(loop);
-        })();
-    }
-
-    // ── Scroll ────────────────────────────────────────────
-    function scrollToBottom() {
-        chatBox.scrollTo({ top: chatBox.scrollHeight, behavior: "smooth" });
-    }
-
-    // ── Ajouter un message ────────────────────────────────
-    function addMessage(text, sender, isHTML = false) {
-        // Supprimer écran de bienvenue au 1er message
-        chatBox.querySelector(".welcome-screen")?.remove();
-
-        const messageElement = document.createElement("div");
-        messageElement.classList.add("message", `${sender}-message`);
-
-        if (isHTML) {
-            messageElement.innerHTML = text;
-        } else {
-            // Affichage texte sécurisé avec sauts de ligne
-            text.split("\n").forEach((line, i, arr) => {
-                messageElement.appendChild(document.createTextNode(line));
-                if (i < arr.length - 1) messageElement.appendChild(document.createElement("br"));
-            });
-        }
-
-        chatBox.appendChild(messageElement);
-        scrollToBottom();
-    }
-
-    function addError(message) {
-        chatBox.querySelector(".welcome-screen")?.remove();
-        const el = document.createElement("div");
-        el.classList.add("error-message");
-        el.textContent = message;
-        chatBox.appendChild(el);
-        scrollToBottom();
-    }
-
-    // ── Typing indicator ──────────────────────────────────
-    function showTypingIndicator() {
-        if (document.querySelector(".typing-indicator")) return;
-        chatBox.querySelector(".welcome-screen")?.remove();
-        const typingEl = document.createElement("div");
-        typingEl.classList.add("typing-indicator");
-        typingEl.innerHTML = "<span></span><span></span><span></span>";
-        chatBox.appendChild(typingEl);
-        scrollToBottom();
-    }
-
-    function hideTypingIndicator() {
-        document.querySelector(".typing-indicator")?.remove();
-    }
-
-    // ── Écran de bienvenue ────────────────────────────────
-    function renderWelcome() {
-        chatBox.innerHTML = `
-            <div class="welcome-screen">
-                <h2 class="welcome-headline">Bonjour,<br>comment puis-je vous aider ?</h2>
-                <p class="welcome-sub">Agent multi-outils alimenté par IA. Posez-moi n'importe quelle question.</p>
-                <div class="welcome-chips">
-                    <button class="chip" data-q="Quelles sont les dernières actualités ?">🌍 Actualités</button>
-                    <button class="chip" data-q="Calcule 15% de 840 €">🔢 Calcul rapide</button>
-                    <button class="chip" data-q="Explique le machine learning en 3 points">🤖 Machine learning</button>
-                    <button class="chip" data-q="Quel LLM choisir pour mon projet ?">💡 Choisir un LLM</button>
-                </div>
-            </div>`;
-
-        chatBox.querySelectorAll(".chip").forEach(chip => {
-            chip.addEventListener("click", () => {
-                userInput.value = chip.dataset.q;
-                sendMessage();
-            });
-        });
-    }
-    renderWelcome();
-
-    // ── Envoi du message ──────────────────────────────────
-    async function sendMessage() {
-        const messageText = userInput.value.trim();
-        if (!messageText || isThinking) return;
-
-        addMessage(messageText, "user");
-        userInput.value = "";
-        isThinking = true;
-        sendBtn.disabled = true;
-        setStatus("thinking");
-        showTypingIndicator();
-
-        try {
-            const response = await fetch(API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: messageText }),
-            });
-
-            hideTypingIndicator();
-
-            if (!response.ok) throw new Error(`Erreur serveur (${response.status})`);
-
-            const data = await response.json();
-
-            if (data.error) {
-                addError(`Erreur : ${data.error}`);
-            } else {
-                const botResponse = data.response;
-                const isHTML = /<[a-z][\s\S]*>/i.test(botResponse);
-                addMessage(botResponse, "bot", isHTML);
-            }
-
-            setStatus("online");
-
-        } catch (error) {
-            hideTypingIndicator();
-            addError(`Impossible de contacter l'API : ${error.message}`);
-            setStatus("error");
-        } finally {
-            isThinking = false;
-            sendBtn.disabled = false;
-            userInput.focus();
-        }
-    }
-
-    // ── Événements ────────────────────────────────────────
-    sendBtn.addEventListener("click", sendMessage);
-
-    userInput.addEventListener("keypress", (event) => {
-        if (event.key === "Enter") {
-            sendMessage();
-        }
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: input }),  // matches AgentRequest(message: str)
     });
 
-    userInput.focus();
-});
+    if (!response.ok) {
+      throw new Error(`Erreur serveur : ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const reply = data.response || "Désolé, aucune réponse reçue.";
+
+    typingRow.remove();
+    appendMessage("bot", reply);
+
+  } catch (err) {
+    typingRow.remove();
+    appendMessage("bot", `⚠️ ${err.message || "Erreur de connexion. Veuillez réessayer."}`);
+    console.error("Erreur API:", err);
+  } finally {
+    sendBtn.disabled = false;
+    textarea.focus();
+  }
+}
+
+// ---- Append a chat message ----
+function appendMessage(role, text) {
+  const chatMessages = document.getElementById("chatMessages");
+
+  const row = document.createElement("div");
+  row.className = `message-row ${role === "user" ? "user-row" : "bot-row"}`;
+
+  const avatar = document.createElement("div");
+  avatar.className = `avatar ${role === "user" ? "user-avatar" : "bot-avatar"}`;
+  avatar.innerHTML =
+    role === "user"
+      ? `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`
+      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+  const bubble = document.createElement("div");
+  bubble.className = `message ${role === "user" ? "user-message" : "bot-message"}`;
+
+  if (role === "bot") {
+    const label = document.createElement("span");
+    label.className = "message-label";
+    label.textContent = "Agent LLM";
+    bubble.appendChild(label);
+  }
+
+  const textNode = document.createElement("span");
+  textNode.innerHTML = formatText(text);
+  bubble.appendChild(textNode);
+
+  row.appendChild(avatar);
+  row.appendChild(bubble);
+
+  chatMessages.appendChild(row);
+  scrollToBottom();
+}
+
+// ---- Typing indicator ----
+function showTypingIndicator() {
+  const chatMessages = document.getElementById("chatMessages");
+
+  const row = document.createElement("div");
+  row.className = "message-row bot-row";
+
+  const avatar = document.createElement("div");
+  avatar.className = "avatar bot-avatar";
+  avatar.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+  const typing = document.createElement("div");
+  typing.className = "typing-indicator";
+  typing.innerHTML = `<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>`;
+
+  row.appendChild(avatar);
+  row.appendChild(typing);
+  chatMessages.appendChild(row);
+  scrollToBottom();
+
+  return row;
+}
+
+// ---- Scroll to bottom ----
+function scrollToBottom() {
+  const chatMessages = document.getElementById("chatMessages");
+  chatMessages.scrollTo({ top: chatMessages.scrollHeight, behavior: "smooth" });
+}
+
+// ---- Basic markdown rendering ----
+function formatText(text) {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(/`([^`]+)`/g, "<code style='background:rgba(99,102,241,0.15);padding:2px 6px;border-radius:4px;font-size:12px;'>$1</code>")
+    .replace(/\n/g, "<br>");
+}
