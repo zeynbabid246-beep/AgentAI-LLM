@@ -1,214 +1,57 @@
-/* ═══════════════════════════════════════════════════
-   style_clean.css  —  Version simplifiée
-   Contient uniquement les tokens et classes de base.
-   Pour le design complet, voir style.css
-   ═══════════════════════════════════════════════════ */
+/* style_clean.css — Clean overrides / utility layer
+   This file extends style.css with print-safe and
+   reduced-motion-safe rules. */
 
-:root {
-    --primary-color:     #a855f7;
-    --background-color:  #080810;
-    --container-bg:      #0e0e1a;
-    --header-bg:         #0e0e1a;
-    --user-msg-bg:       #7c3aed;
-    --bot-msg-bg:        #13132a;
-    --text-color-light:  #f0ecff;
-    --text-color-dark:   #c4bfe0;
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: var(--background-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+/* Print styles */
+@media print {
+  .bg-grid,
+  .glow-orb,
+  .chat-input-area,
+  .chat-header .status {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+    color: #000;
+  }
+
+  .chat-messages {
+    overflow: visible;
+    max-height: none;
+  }
+
+  .bot-message {
+    background: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #111;
+  }
+
+  .user-message {
+    background: #e0e7ff;
+    color: #111;
+  }
 }
 
-.chat-container {
-    width: 600px;
-    height: 90vh;
-    max-height: 800px;
-    background-color: var(--container-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(124, 58, 237, 0.2);
-    display: flex;
-    flex-direction: column;
+/* Focus ring accessibility */
+:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 3px;
 }
 
-.chat-header {
-    background: var(--header-bg);
-    color: var(--text-color-light);
-    padding: 1rem;
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: 500;
-    border-top-left-radius: 12px;
-    border-top-right-radius: 12px;
-    border-bottom: 1px solid rgba(124, 58, 237, 0.2);
-}
-
-.chat-box {
-    flex-grow: 1;
-    padding: 20px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-.message {
-    padding: 12px 18px;
-    border-radius: 20px;
-    max-width: 75%;
-    line-height: 1.5;
-    word-wrap: break-word;
-}
-
-.user-message {
-    background-color: var(--user-msg-bg);
-    color: var(--text-color-light);
-    align-self: flex-end;
-    border-bottom-right-radius: 5px;
-}
-
-.bot-message {
-    background-color: var(--bot-msg-bg);
-    color: var(--text-color-dark);
-    align-self: flex-start;
-    border-bottom-left-radius: 5px;
-    border: 1px solid rgba(124, 58, 237, 0.2);
-}
-
-.chat-input {
-    display: flex;
-    padding: 15px;
-    border-top: 1px solid rgba(124, 58, 237, 0.2);
-    background-color: var(--container-bg);
-    border-bottom-left-radius: 12px;
-    border-bottom-right-radius: 12px;
-}
-
-#user-input {
-    flex-grow: 1;
-    border: 1px solid rgba(124, 58, 237, 0.3);
-    border-radius: 25px;
-    padding: 12px 18px;
-    font-size: 16px;
-    outline: none;
-    background: rgba(8, 8, 16, 0.8);
-    color: var(--text-color-light);
-    transition: border-color 0.2s;
-}
-
-#user-input::placeholder { color: #4a4670; }
-
-#user-input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
-}
-
-#send-btn {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    margin-left: 10px;
-    cursor: pointer;
-    font-size: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
-}
-
-#send-btn:hover { background-color: #9333ea; }
-
-/* Typing Indicator */
-.typing-indicator {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    gap: 4px;
-    align-self: flex-start;
-}
-
-.typing-indicator span {
-    height: 8px;
-    width: 8px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    display: inline-block;
-    animation: bounce 1.4s infinite ease-in-out both;
-}
-
-.typing-indicator span:nth-of-type(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-of-type(2) { animation-delay: -0.16s; }
-
-@keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40%           { transform: scale(1.0); }
-}
-
-/* Structured responses */
-.structured-response .introduction {
-    color: var(--primary-color);
-    font-size: 1.1rem;
-    margin-bottom: 15px;
-    font-weight: 600;
-}
-
-.recommendations-table { margin: 15px 0; overflow-x: auto; }
-
-.recommendations-table table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(8,8,16,.9);
-    border-radius: 8px;
-    overflow: hidden;
-}
-
-.recommendations-table th {
-    background: linear-gradient(135deg, #7c3aed, #a855f7);
-    color: white;
-    padding: 12px 10px;
-    text-align: left;
-    font-weight: 600;
-    font-size: 0.9rem;
-}
-
-.recommendations-table td {
-    padding: 12px 10px;
-    border-bottom: 1px solid rgba(124,58,237,.1);
-    vertical-align: top;
-    font-size: 0.85rem;
-    line-height: 1.4;
-    color: #9b96b8;
-}
-
-.recommendations-table tr:last-child td    { border-bottom: none; }
-.recommendations-table tr:nth-child(even) { background: rgba(124,58,237,.04); }
-.recommendations-table .model-name        { color: #c084fc; font-weight: 600; }
-
-.structured-response .conclusion {
-    margin-top: 15px;
-    padding: 12px;
-    background: rgba(124,58,237,.07);
-    border-left: 3px solid #a855f7;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-    color: #9b96b8;
-}
-
-.structured-response .conclusion strong { color: #c084fc; }
-
-/* Responsive */
-@media (max-width: 480px) {
-    .recommendations-table { font-size: 0.8rem; }
-    .recommendations-table th,
-    .recommendations-table td { padding: 8px 6px; }
-    .structured-response .introduction { font-size: 1rem; }
+/* Selection color */
+::selection {
+  background: rgba(99, 102, 241, 0.35);
+  color: #fff;
 }
