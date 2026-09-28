@@ -6,7 +6,7 @@
   <title>Mon Agent LLM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css?v=4" />
 </head>
 <body>
   <div class="bg-grid"></div>
@@ -25,6 +25,8 @@
         <h1>Mon Agent <span class="accent">LLM</span></h1>
         <p class="status"><span class="pulse-dot"></span>En ligne · Prêt à répondre</p>
       </div>
+      <div class="provider-badge" id="providerBadge" title="LLM provider actif">⋯</div>
+      <button id="newChatBtn" class="new-chat-btn" title="Démarrer une nouvelle conversation">+ Nouveau chat</button>
     </header>
 
     <div class="chat-messages" id="chatMessages">
@@ -52,6 +54,6 @@
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="script.js?v=4"></script>
 </body>
 </html>

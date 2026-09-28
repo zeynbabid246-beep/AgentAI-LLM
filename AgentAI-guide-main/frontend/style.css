@@ -385,6 +385,97 @@ kbd {
   animation-delay: 0.3s;
 }
 
+/* ---- Provider badge (shows active LLM provider/model from /health) ---- */
+.provider-badge {
+  margin-left: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-3);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  white-space: nowrap;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.provider-badge.ok {
+  color: var(--accent-2);
+  border-color: var(--border-glow);
+}
+
+/* ---- New-chat button ---- */
+.new-chat-btn {
+  margin-left: 8px;
+  background: var(--surface-3);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  cursor: pointer;
+  transition: color var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.new-chat-btn:hover {
+  color: var(--text);
+  border-color: var(--border-glow);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.2);
+}
+
+/* ---- Streaming state & tool chips ---- */
+.stream-status {
+  min-height: 18px;
+  font-size: 11px;
+  color: var(--accent-2);
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+
+.stream-error {
+  color: #f87171;
+  font-size: 12px;
+}
+
+.tool-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 8px;
+}
+
+.tool-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-family: var(--font-mono);
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-glow);
+  background: rgba(99, 102, 241, 0.08);
+  color: var(--accent-2);
+}
+
+.tool-chip.running {
+  animation: chipPulse 1.4s ease-in-out infinite;
+}
+
+.tool-chip:not(.running) {
+  border-color: rgba(34, 197, 94, 0.35);
+  color: #4ade80;
+  background: rgba(34, 197, 94, 0.07);
+}
+
+@keyframes chipPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
 /* ---- Scrollbar for textarea ---- */
 textarea::-webkit-scrollbar { width: 3px; }
 textarea::-webkit-scrollbar-thumb { background: var(--surface-3); }

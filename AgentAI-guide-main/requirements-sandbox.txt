@@ -1,0 +1,17 @@
+# Smart Agent API — dependencies available on restricted/package-mirror machines.
+# The full stack (requirements.txt) additionally needs: langgraph, langchain-google-genai.
+# This subset runs the app via the OpenAI-compatible Gemini fallback tier in agent.py.
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+python-dotenv>=1.0
+
+# Agent stack (mirror-compatible versions)
+langchain>=0.2,<0.3
+langchain-openai>=0.1,<0.2
+openai>=1.40
+
+# Tools
+duckduckgo_search>=7.0
+requests>=2.31
